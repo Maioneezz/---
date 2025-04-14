@@ -1,0 +1,135 @@
+import pygame
+import sys
+import random
+import math
+
+# Инициализация Pygame
+pygame.init()
+
+# Настройки окна
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Ping-Pong (с ускорением и картинкой мяча)")
+
+# Цвета
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+
+# Настройки ракеток
+PADDLE_WIDTH, PADDLE_HEIGHT = 15, 100
+PADDLE_SPEED = 7
+
+# Настройки мяча
+BALL_SIZE = 30  # Размер мяча (должен соответствовать ball.png)
+INITIAL_BALL_SPEED = 5
+MAX_BALL_SPEED = 15
+
+# Загрузка изображения мяча
+try:
+    ball_img = pygame.image.load("ball.png").convert_alpha()  # PNG с прозрачностью
+    ball_img = pygame.transform.scale(ball_img, (BALL_SIZE, BALL_SIZE))
+except:
+    print("Ошибка загрузки ball.png! Мяч будет нарисован.")
+    ball_img = None
+
+# Создание ракеток
+left_paddle = pygame.Rect(50, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
+right_paddle = pygame.Rect(WIDTH - 50 - PADDLE_WIDTH, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
+
+# Создание мяча
+ball = pygame.Rect(WIDTH // 2 - BALL_SIZE // 2, HEIGHT // 2 - BALL_SIZE // 2, BALL_SIZE, BALL_SIZE)
+ball_dx = INITIAL_BALL_SPEED * random.choice((1, -1))
+ball_dy = INITIAL_BALL_SPEED * random.choice((1, -1))
+
+# Счет
+left_score = 0
+right_score = 0
+font = pygame.font.Font(None, 36)
+
+# Основной игровой цикл
+clock = pygame.time.Clock()
+running = True
+
+while running:
+    screen.fill(BLACK)
+    
+    # Обработка событий
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+    
+    # Управление ракетками
+    keys = pygame.key.get_pressed()
+    
+    # Левая ракетка (W/S)
+    if keys[pygame.K_w] and left_paddle.top > 0:
+        left_paddle.y -= PADDLE_SPEED
+    if keys[pygame.K_s] and left_paddle.bottom < HEIGHT:
+        left_paddle.y += PADDLE_SPEED
+    
+    # Правая ракетка (↑/↓)
+    if keys[pygame.K_UP] and right_paddle.top > 0:
+        right_paddle.y -= PADDLE_SPEED
+    if keys[pygame.K_DOWN] and right_paddle.bottom < HEIGHT:
+        right_paddle.y += PADDLE_SPEED
+    
+    # Движение мяча
+    ball.x += ball_dx
+    ball.y += ball_dy
+    
+    # Отскок от стен
+    if ball.top <= 0 or ball.bottom >= HEIGHT:
+        ball_dy *= -1
+    
+    # Отскок от ракеток + ускорение
+    if ball.colliderect(left_paddle) or ball.colliderect(right_paddle):
+        ball_dx *= -1.1
+        ball_dy *= 1.1
+        
+        # Ограничение скорости
+        speed = math.sqrt(ball_dx**2 + ball_dy**2)
+        if speed > MAX_BALL_SPEED:
+            ball_dx = (ball_dx / speed) * MAX_BALL_SPEED
+            ball_dy = (ball_dy / speed) * MAX_BALL_SPEED
+        
+        # Рандомизация отскока
+        ball_dy += random.uniform(-1, 1)
+    
+    # Гол (мяч ушел за границу)
+    if ball.left <= 0:
+        right_score += 1
+        ball.x = WIDTH // 2 - BALL_SIZE // 2
+        ball.y = HEIGHT // 2 - BALL_SIZE // 2
+        ball_dx = INITIAL_BALL_SPEED * random.choice((1, -1))
+        ball_dy = INITIAL_BALL_SPEED * random.choice((1, -1))
+    
+    if ball.right >= WIDTH:
+        left_score += 1
+        ball.x = WIDTH // 2 - BALL_SIZE // 2
+        ball.y = HEIGHT // 2 - BALL_SIZE // 2
+        ball_dx = INITIAL_BALL_SPEED * random.choice((1, -1))
+        ball_dy = INITIAL_BALL_SPEED * random.choice((1, -1))
+    
+    # Отрисовка объектов
+    pygame.draw.rect(screen, WHITE, left_paddle)
+    pygame.draw.rect(screen, WHITE, right_paddle)
+    
+    # Отрисовка мяча (картинка или круг)
+    if ball_img:
+        screen.blit(ball_img, (ball.x, ball.y))
+    else:
+        pygame.draw.ellipse(screen, WHITE, ball)
+    
+    pygame.draw.aaline(screen, WHITE, (WIDTH // 2, 0), (WIDTH // 2, HEIGHT))
+    
+    # Отрисовка счета
+    left_text = font.render(str(left_score), True, WHITE)
+    right_text = font.render(str(right_score), True, WHITE)
+    screen.blit(left_text, (WIDTH // 4, 20))
+    screen.blit(right_text, (3 * WIDTH // 4, 20))
+    
+    pygame.display.flip()
+    clock.tick(60)
+
+pygame.quit()
+sys.exit()
