@@ -9,24 +9,25 @@ pygame.init()
 # Настройки окна
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Ping-Pong (с ускорением и картинкой мяча)")
+pygame.display.set_caption("Ping-Pong")
 
 # Цвета
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+SKY_BLUE = (135, 206, 235)  # Голубой фон
 
 # Настройки ракеток
-PADDLE_WIDTH, PADDLE_HEIGHT = 15, 100
-PADDLE_SPEED = 7
+PADDLE_WIDTH, PADDLE_HEIGHT = 15, 110
+PADDLE_SPEED = 10
 
 # Настройки мяча
-BALL_SIZE = 30  # Размер мяча (должен соответствовать ball.png)
-INITIAL_BALL_SPEED = 5
-MAX_BALL_SPEED = 15
+BALL_SIZE = 25
+INITIAL_BALL_SPEED = 3
+MAX_BALL_SPEED = 9
 
 # Загрузка изображения мяча
 try:
-    ball_img = pygame.image.load("ball.png").convert_alpha()  # PNG с прозрачностью
+    ball_img = pygame.image.load("ball.png").convert_alpha()
     ball_img = pygame.transform.scale(ball_img, (BALL_SIZE, BALL_SIZE))
 except:
     print("Ошибка загрузки ball.png! Мяч будет нарисован.")
@@ -51,7 +52,7 @@ clock = pygame.time.Clock()
 running = True
 
 while running:
-    screen.fill(BLACK)
+    screen.fill(SKY_BLUE)  # Заливка голубым цветом
     
     # Обработка событий
     for event in pygame.event.get():
@@ -123,8 +124,8 @@ while running:
     pygame.draw.aaline(screen, WHITE, (WIDTH // 2, 0), (WIDTH // 2, HEIGHT))
     
     # Отрисовка счета
-    left_text = font.render(str(left_score), True, WHITE)
-    right_text = font.render(str(right_score), True, WHITE)
+    left_text = font.render(str(left_score), True, BLACK)
+    right_text = font.render(str(right_score), True, BLACK)
     screen.blit(left_text, (WIDTH // 4, 20))
     screen.blit(right_text, (3 * WIDTH // 4, 20))
     
